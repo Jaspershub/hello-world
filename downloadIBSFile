@@ -1,0 +1,329 @@
+#encoding:utf-8
+import pyperclip
+from selenium import webdriver
+import getpass
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.wait import WebDriverWait
+import pyautogui
+import pywinauto
+import time
+import os
+from time import sleep
+import datetime
+import logging
+from openpyxl import load_workbook
+
+#defined
+global flag
+flag = 1
+#Get the first day and last day in last month
+lastMonth = { 1:"12",2:"01",3:"02",4:"03",5:"04",6:"05",7:"06",8:"07",9:"08",10:"09",11:"10",12:"11"}
+dayNum = {1:"31",2:"28",3:"31",4:"30",5:"31",6:"30",7:"31",8:"31",9:"30",10:"31",11:"30",12:"31"}
+month = lastMonth[datetime.date.today().month]
+day = dayNum[int(month)]
+year = datetime.date.today().year
+if int(month)==12:
+    year = year - 1
+lastDate = day + "." + month + "." + str(year)
+firstDate = "01." + month + "." + str(year)
+
+a='C:\Users\%s\AppData\Local\Google\Chrome\Application\chromedriver.exe' % (getpass.getuser())#IBS
+z=r'C:\Users\%s\Downloads\tx.sap' % (getpass.getuser())
+address = 'C:/Users/%s/Desktop'% (getpass.getuser())
+#log
+logging.basicConfig(level=logging.WARNING, 
+                    filename= address + '\Assistance\log.txt', 
+                    filemode='a', 
+                    format='%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s: %(message)s')
+
+#Function
+def downloadFile(str1,str2,str3,str4):
+    global flag
+    if(str4 == 0 or flag>1):
+        d=webdriver.Chrome(executable_path=a)
+        d.get("https://ep02.aspac.kworld.kpmg.com:51301/irj/portal/KPMG/ECC_GUI" )
+        time.sleep(3)
+        z1=os.popen(z)
+        time.sleep(3)
+        app=pywinauto.Application()
+        app.start(r"C:\Program Files (x86)\SAP\FrontEnd\SAPgui\saplogon.exe")
+
+        try:
+            app['SAP Logon 750'].wait('ready',timeout=10)
+        except:
+            pass
+    
+        app.connect(title="SAP Logon 750")
+        try:
+            app['SAP Easy Access'].wait('ready',timeout=10)
+        except:
+            pass
+ 
+        time.sleep(1)
+        time.sleep(1)
+        app['SAP Easy Access']['combobox'].type_keys(str1)
+        app['SAP Easy Access'].type_keys('{ENTER}')
+        try:
+            app['Vendor Line Item Display'].wait('ready',timeout=10)
+        except:
+            pass
+    else:
+        time.sleep(1)
+        pyautogui.typewrite(str1)
+        time.sleep(1)
+        pyautogui.press('enter') 
+    time.sleep(3)
+    pyautogui.hotkey('shift','f5')
+    time.sleep(2)
+    pyautogui.hotkey('f12')
+    time.sleep(2)
+    pyautogui.hotkey('shift','f5')
+    time.sleep(2)
+    pyautogui.typewrite(str2)
+    time.sleep(2)
+    pyautogui.hotkey('f8')
+    time.sleep(2)
+    if(str2 != "/AR UNKNOWN" and pyautogui.locateOnScreen(address + "\Assistance\Date.PNG")!=None):
+        x,y = pyautogui.center(pyautogui.locateOnScreen(address + "\Assistance\Date.PNG"))
+        pyautogui.click(x+150,y)
+        #Input Date
+        pyperclip.copy(firstDate)
+        time.sleep(2)
+        pyautogui.hotkey('ctrl', 'v')
+        time.sleep(2)
+        pyautogui.hotkey('tab')
+        pyperclip.copy(lastDate)
+        time.sleep(3)
+        pyautogui.hotkey('ctrl', 'v')
+        time.sleep(2)
+    elif(str2 != "/AR UNKNOWN" and pyautogui.locateOnScreen(address + "\Assistance\Date.PNG")==None):
+        pyautogui.hotkey('ctrl','tab')
+        time.sleep(1)
+        for i  in range(1,6):    
+            pyautogui.press('down')
+            time.sleep(1)
+        #Input Date
+        pyperclip.copy(firstDate)
+        time.sleep(2)
+        pyautogui.hotkey('ctrl', 'v')
+        time.sleep(2)
+        pyautogui.hotkey('tab')
+        pyperclip.copy(lastDate)
+        time.sleep(3)
+        pyautogui.hotkey('ctrl', 'v')
+        time.sleep(2)
+    pyautogui.hotkey('f8')
+    #time.sleep(50)
+    waitTime = 0
+    while(pyautogui.locateOnScreen(address + "\Assistance\Displayed.PNG")==None and waitTime<300):
+        waitTime = waitTime + 10
+        logging.warning(str3 + " loading")
+        time.sleep(10)
+    pyautogui.hotkey('shift','f4')
+    time.sleep(2)
+    pyautogui.hotkey('tab')
+    time.sleep(2)
+    pyautogui.press('left')
+    time.sleep(2)
+    pyautogui.press('up')
+    time.sleep(2)
+    pyautogui.press('enter')
+    time.sleep(2)
+    pyautogui.press('enter')
+    time.sleep(2)
+    pyautogui.press('enter')
+    time.sleep(2)
+    if(pyautogui.locateOnScreen(address + "\Assistance\Table.PNG")!=None):
+        x,y = pyautogui.center(pyautogui.locateOnScreen(address + "\Assistance\Table.PNG"))
+        pyautogui.click(x,y)
+    elif(str4==0 or flag>1):
+        pyautogui.press('up')
+    time.sleep(2)
+    pyautogui.press('enter')
+    time.sleep(2)
+    pyautogui.press('enter')
+    time.sleep(10)
+    pyautogui.hotkey('f12')
+    time.sleep(2)
+    pyautogui.typewrite(str3)
+    time.sleep(2)
+    if(pyautogui.locateOnScreen(address + "\Assistance\Address.PNG")!=None):
+        x,y = pyautogui.center(pyautogui.locateOnScreen(address + "\Assistance\Address.PNG"))
+        pyautogui.click(x-100,y)
+        time.sleep(2)
+    else:
+        for i in range(1,12):
+            pyautogui.hotkey('tab')
+            time.sleep(0.5)
+    pyperclip.copy(address)
+    time.sleep(2)
+    pyautogui.hotkey('ctrl', 'v')
+    time.sleep(2)
+    pyautogui.press('enter')
+    time.sleep(2)
+    if(pyautogui.locateOnScreen(address + "\Assistance\Save.PNG")!=None):
+        x,y = pyautogui.center(pyautogui.locateOnScreen(address + "\Assistance\Save.PNG"))
+        pyautogui.click(x,y)
+        time.sleep(2)
+    else:
+        for i in range(1,15):
+            pyautogui.hotkey('tab')
+            time.sleep(0.5)
+            pyautogui.press('enter')
+            time.sleep(1)
+    if(os.path.exists(address + "/" + str3 +".xlsx") == True):
+        pyautogui.press('left')
+        time.sleep(1)
+        pyautogui.press('enter')
+        time.sleep(1)
+    pyautogui.hotkey('alt','f4')
+    time.sleep(3)
+    pyautogui.hotkey('esc')
+    time.sleep(2)
+    pyautogui.hotkey('esc')
+    #download successfully,back to index
+
+    time.sleep(1)
+    #global flag
+    flag = flag + 1
+    if (os.path.exists(address + "/" + str3 +".xlsx") == False) and flag <= 3:
+        logging.warning(str3+u"下载失败,尝试第 " + str(flag) + u" 次下载！")
+        downloadFile(str1,str2,str3,str4)
+    elif (os.path.exists(address + "/" + str3 +".xlsx") == False) and flag > 3:
+        logging.warning(str3+u"下载失败,下载次数超过3次，放弃下载")
+    else:
+        logging.warning(str3+u"下载完成")
+
+    if(str4 ==len(listFileNumber)-1 or os.path.exists(address + "/" + str3 +".xlsx") == False):
+        pyautogui.hotkey('alt','f4')
+        time.sleep(1)
+        pyautogui.hotkey('tab')
+        time.sleep(1)
+        pyautogui.press('enter')
+        time.sleep(1)
+        pyautogui.hotkey('alt','f4')
+        time.sleep(1)
+        pyautogui.hotkey('tab')
+        time.sleep(1)
+        pyautogui.press('enter')
+        time.sleep(1)
+        d.close()
+        pyautogui.hotkey('alt','f4')
+        time.sleep(1)
+        #close all interface
+    return
+
+def showFileContents():
+    print u"请输入文件对应编号以下载文件(如:下载1号文件输入1，下载1-3号文件输入123，然后按下回车开始下载。"
+    for i in range(0,len(fileName)):
+        print str(i+1) + "."+ fileName[i]
+    print str(len(fileName)+1) +u".添加\删除\查询\修改下载文件目录"
+    print u"0.退出"
+    
+def addFileContents():
+    print u"请输入下载文件的T-Code(如FBL5N、FAGLL03):"
+    str1 = raw_input()
+    fileType.append(str1)
+    print u"请输入下载文件的文件名(如AR OAK_FBL5N、AR OAK_INCOME):"
+    str2 = raw_input()
+    fileName.append(str2)
+    print u"请输入下载文件的文件名(如FBL5N、INCOME):"
+    str3 = raw_input()
+    saveName.append(str3)
+    print u"添加下载文件目录完成，当前下载文件目录为:"
+    home()
+
+def delFileContents():
+    print u"请输入要删除的下载文件前的编号:"
+    index = input()-1
+    del fileType[index]
+    del fileName[index]
+    del saveName[index]
+    print u"删除下载文件目录完成，当前下载文件目录为:"
+    home() 
+
+def updateFileContents():
+    print u"请输入要修改的下载文件前的编号:"
+    index = input()-1
+    print u"请输入下载文件的T-Code(如FBL5N、FAGLL03):"
+    str1 = raw_input()
+    fileType[index] = str1
+    print u"请输入下载文件的文件名(如AR OAK_FBL5N、AR OAK_INCOME):"
+    str2 = raw_input()
+    fileName[index] = str2
+    print u"请输入下载文件的文件名(如FBL5N、INCOME):"
+    str3 = raw_input()
+    saveName[index] = str3
+    print u"更新下载文件目录完成，当前下载文件目录为:"
+    home()    
+
+def inqueryFileContents():
+    print u"请输入要查询的下载文件前的编号:"
+    index = input()-1
+    print "T-Code: "+fileType[index]
+    print u"文件名: "+fileName[index]
+    print u"保存名: "+saveName[index]
+    print u"文件详细信息查询完成,按任意键回到首页\n"
+    os.system('pause')
+    home()
+    
+def updateInterface():
+        print u"1.增加下载文件目录\n2.删除下载文件目录\n3.查询下载文件目录\n4.修改下载文件目录\n0.回到首页"
+        index = input()
+        if(index == 1):
+            addFileContents()
+        elif(index ==2):
+            delFileContents()
+        elif(index ==3):
+            inqueryFileContents()
+        elif(index ==4):
+            updateFileContents()
+        elif(index ==0):
+            home()
+        else:
+            print u"请输入正确的操作编号"
+            updateInterface()
+
+def home():
+    showFileContents()
+    fileNumber = input()
+    if(fileNumber == 0):
+        exit()
+    elif(fileNumber == len(fileName)+1):
+        updateInterface()
+    else:
+        global listFileNumber
+        listFileNumber = list(str(fileNumber))
+        for i in range(0,len(listFileNumber)):
+            global flag
+            flag = 1
+            if(int(listFileNumber[i]) not in range(1,len(fileName)+1)):
+                print u"文件不存在，请输入正确的文件编号"
+            else:    
+                downloadFile(fileType[int(listFileNumber[i])-1],fileName[int(listFileNumber[i])-1],saveName[int(listFileNumber[i])-1],i)    
+    os.startfile(address + '\Assistance\log.txt')
+    home()
+
+'-------------------------------Main-----------------------------------------------------------------'
+#Main
+if (os.path.exists(address + "\Assistance\FileContents.xlsm") == True):
+    #wb = load_workbook(r"C:\Users\jennyjtan\Desktop\FileContents.xlsm")
+    wb = load_workbook(address + "\Assistance\FileContents.xlsm")
+    sh = wb["fileContents"]
+    fileNum = sh["A1"].value+1
+    fileType = []
+    fileName = []
+    saveName = []
+    for i in range(3,fileNum):
+        fileType.append(str(sh["A"+str(i)].value))
+        fileName.append(str(sh["B"+str(i)].value))
+        saveName.append(str(sh["C"+str(i)].value))
+    #print fileType
+    #print fileName
+    #print saveName
+else:
+    fileType = ["FBL5N","FAGLL03","FAGLL03","FAGLL03","FAGLL03","FAGLL03"]
+    fileName = ["AR OAK_FBL5N","AR OAK_INCOME","AR OAK_VAT","AR OAK_Sur","AR OAK_M ADJ","/AR UNKNOWN"]
+    saveName = ["FBL5N","INCOME","VAT","Sur charge","Manual adjustment","FAGLL03"]
+home()
+
